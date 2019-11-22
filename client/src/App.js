@@ -8,40 +8,70 @@ const App = () => {
   const endpoint = "http://localhost:3000/"
   const socket = socketIOClient(endpoint);
   const [ handle, updateHandle ] = useState("");
-  const [ displayHandle, updateDisplayHandle ] = useState("");
   const [ chat, updateChat ] = useState("");
-  const [ displayChat, updateDisplayChat ] = useState("");
-  const [ incomingChat, updateIncomingChat ] = useState("");
+  const [ incomingChat, updateIncomingChat ] = useState({});
+  const [ isTyping, updateIsTyping ] = useState({});
 
 
 
 
   useEffect( () => {
 
-    socket.on('chat message', function(msg){
-      updateIncomingChat(msg)
+    socket.on("chat message", function(chat) {
+      updateIncomingChat(chat);
     });       
+
+    socket.on("user is typing", function(userIsTyping) {
+      updateIsTyping(userIsTyping);
+    });
 
   }, []);
 
-  function setDisplayHandle(e) {
-    e.preventDefault();
-    updateDisplayHandle(handle);
+  function updateChatFunction (value) {
+    
+    socket.emit("user is typing", {
+      handle: handle.length > 0 ? handle : 'A user',
+      typing: true
+    });
+    updateChat(value);
   }
+  let typingTimer;  
+  const doneTypingInterval = 2500;  
+
+  function chatKeyUp () {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(doneTyping, doneTypingInterval);
+
+  }
+
+  function chatKeyDown () {
+    clearTimeout(typingTimer);
+  }
+  function doneTyping () {
+    socket.emit("user is typing", {
+      handle: handle.length > 0 ? handle : 'A user',
+      typing: false
+    });
+  }  
+
   function setChat(e) {
     e.preventDefault();
-    updateDisplayChat(chat)
-    socket.emit('chat message', chat);
+
+    const chatToSend = {
+      msg: chat,
+      handle: handle
+    };
+
+    socket.emit('chat message', chatToSend);
   }
 
   return (
     <div>
-      { incomingChat }
+      { incomingChat && incomingChat.msg && incomingChat.msg.length > 0 ? incomingChat.handle + ": " + incomingChat.msg : "" }
+      { isTyping && isTyping.typing ? isTyping.handle + ": " + "is typing" : "" }
       <div className="chat-wrapper">
-        { displayHandle.length > 0 ? "Hello " + displayHandle : "" }
-        { displayChat.length > 0 ? "Chat: " + displayChat: "" }
-        <form>
 
+        <form>
           <label htmlFor="handle-input"> 
             <input 
               id="handle-input" 
@@ -51,7 +81,6 @@ const App = () => {
               onChange={e => updateHandle(e.target.value)}> 
             </input>
           </label>
-          <input type="submit" value="Submit" onClick={ e => setDisplayHandle(e) }/>
 
           <label htmlFor="chat-input"> 
             <input 
@@ -59,10 +88,12 @@ const App = () => {
               type="text"
               value={ chat } 
               placeholder="Chat"
-              onChange={e => updateChat(e.target.value)}> 
+              onChange={e => updateChatFunction(e.target.value)}
+              onKeyDown={chatKeyDown}
+              onKeyUp={chatKeyUp}> 
             </input>
           </label>
-          <input type="submit" value="Submit" onClick={ e => setChat(e) }/>  
+          <input type="submit" value="Send" onClick={ e => setChat(e) }/>  
 
         </form>
       </div>

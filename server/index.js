@@ -7,18 +7,14 @@ app.get('/', function(req, res){
 });
 
 io.on('connection', function(socket){
-    console.log('a user connected');
-    // leverage the socket obj api 
-    socket.on('disconnect', function(){
-        console.log('user disconnected');
-      });    
-
-    socket.on('chat message', function(msg){
-        io.emit('chat message', msg);
-        console.log('message: ' + msg);
+ 
+    socket.on("user is typing", function(userIsTyping){
+        io.emit("user is typing", userIsTyping);
+    });     
+    socket.on('chat message', function(chat){
+        io.emit('chat message', chat);
     });      
 
-    socket.broadcast.emit('hi');
 });
 
 http.listen(3000, function(){
