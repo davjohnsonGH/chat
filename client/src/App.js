@@ -11,14 +11,16 @@ const App = () => {
   const [ displayHandle, updateDisplayHandle ] = useState("");
   const [ chat, updateChat ] = useState("");
   const [ displayChat, updateDisplayChat ] = useState("");
+  const [ incomingChat, updateIncomingChat ] = useState("");
+
 
 
 
   useEffect( () => {
 
-    socket.on("FromAPI", ( data ) => {
-      console.log(data)
-    });      
+    socket.on('chat message', function(msg){
+      updateIncomingChat(msg)
+    });       
 
   }, []);
 
@@ -33,34 +35,37 @@ const App = () => {
   }
 
   return (
-    <div className="chat-wrapper">
-      { displayHandle.length > 0 ? "Hello " + displayHandle : "" }
-      { displayChat.length > 0 ? "Chat: " + displayChat: "" }
-      <form>
+    <div>
+      { incomingChat }
+      <div className="chat-wrapper">
+        { displayHandle.length > 0 ? "Hello " + displayHandle : "" }
+        { displayChat.length > 0 ? "Chat: " + displayChat: "" }
+        <form>
 
-        <label htmlFor="handle-input"> 
-          <input 
-            id="handle-input" 
-            type="text"
-            value={ handle } 
-            placeholder="Handle"
-            onChange={e => updateHandle(e.target.value)}> 
-          </input>
-        </label>
-        <input type="submit" value="Submit" onClick={ e => setDisplayHandle(e) }/>
+          <label htmlFor="handle-input"> 
+            <input 
+              id="handle-input" 
+              type="text"
+              value={ handle } 
+              placeholder="Handle"
+              onChange={e => updateHandle(e.target.value)}> 
+            </input>
+          </label>
+          <input type="submit" value="Submit" onClick={ e => setDisplayHandle(e) }/>
 
-        <label htmlFor="chat-input"> 
-          <input 
-            id="chat-input" 
-            type="text"
-            value={ chat } 
-            placeholder="Chat"
-            onChange={e => updateChat(e.target.value)}> 
-          </input>
-        </label>
-        <input type="submit" value="Submit" onClick={ e => setChat(e) }/>  
+          <label htmlFor="chat-input"> 
+            <input 
+              id="chat-input" 
+              type="text"
+              value={ chat } 
+              placeholder="Chat"
+              onChange={e => updateChat(e.target.value)}> 
+            </input>
+          </label>
+          <input type="submit" value="Submit" onClick={ e => setChat(e) }/>  
 
-      </form>
+        </form>
+      </div>
     </div>
   );
 };
