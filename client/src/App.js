@@ -6,15 +6,43 @@ import socketIOClient from "socket.io-client";
 const App = () => {
 
   const endpoint = "http://localhost:3000/"
-  const socket = socketIOClient(endpoint);
+  const socket = socketIOClient(endpoint, {transports: ['websocket']});
   const [ handle, updateHandle ] = useState("");
   const [ chat, updateChat ] = useState("");
   const [ incomingChat, updateIncomingChat ] = useState({});
   const [ isTyping, updateIsTyping ] = useState({});
 
+  // incomingChat observer
+  useEffect( () => {
+    // append incoming chat to message list container in DOM
+    if (incomingChat.msg && incomingChat.msg.length > 0 ) {
+
+      const messageListElement = document.getElementById("messageListContainer");
+      let addedClass = "";
+  
+      if (messageListElement.children.length % 2 !== 0) { addedClass = "darker"; }
+      const messageElement = createMessageElement(incomingChat.msg, addedClass);
+      messageListElement.appendChild(messageElement);      
+
+    }
+
+  }, [ incomingChat ]);
+
+  function createMessageElement(msg, addedClass = "") {
+
+    const para = document.createElement("p");
+    const node = document.createTextNode(msg);
+    para.appendChild(node);
+    const div = document.createElement("div");
+    div.className += "message-container " +  addedClass;
+    div.appendChild(para);
+
+    return div;
+
+  }
 
 
-
+  // init
   useEffect( () => {
 
     socket.on("chat message", function(chat) {
@@ -66,9 +94,11 @@ const App = () => {
   }
 
   return (
-    <div>
-      { incomingChat && incomingChat.msg && incomingChat.msg.length > 0 ? incomingChat.handle + ": " + incomingChat.msg : "" }
+    <div>        
+      <div id="messageListContainer" className="message-list-container"></div>
+
       { isTyping && isTyping.typing ? isTyping.handle + ": " + "is typing" : "" }
+      
       <div className="chat-wrapper">
 
         <form>
