@@ -21,17 +21,17 @@ const App = () => {
       let addedClass = "";
   
       if (messageListElement.children.length % 2 !== 0) { addedClass = "darker"; }
-      const messageElement = createMessageElement(incomingChat.msg, addedClass);
+      const messageElement = createMessageElement(incomingChat, addedClass);
       messageListElement.appendChild(messageElement);      
 
     }
 
   }, [ incomingChat ]);
 
-  function createMessageElement(msg, addedClass = "") {
+  function createMessageElement(incomingChat, addedClass = "") {
 
     const para = document.createElement("p");
-    const node = document.createTextNode(msg);
+    const node = document.createTextNode(incomingChat.handle + ": " + incomingChat.msg);
     para.appendChild(node);
     const div = document.createElement("div");
     div.className += "message-container " +  addedClass;
@@ -98,7 +98,7 @@ const App = () => {
       <div id="messageListContainer" className="message-list-container"></div>
 
       { isTyping && isTyping.typing ? isTyping.handle + ": " + "is typing" : "" }
-      
+
       <div className="chat-wrapper">
 
         <form>
